@@ -3,31 +3,27 @@ name: Deploy 4M System to GitHub Pages
 on:
   push:
     branches:
-      - main  # หรือ master หาก Branch หลักของคุณชื่อ master
+      - main
 
-# --- เพิ่มส่วนนี้เข้าไป ---
-# ส่วนนี้เป็นการให้สิทธิ์ Action ในการเขียนข้อมูลลง Repository
 permissions:
   contents: write
-# -------------------------
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. ดึงโค้ดล่าสุดจาก Repository ของเรามาเตรียมไว้
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. ค้นหาคำว่า '{{secrets.GH_TOKEN}}' ในไฟล์แล้วแทนที่ด้วย Token จริง
-      # !!! หากคุณเปลี่ยนชื่อไฟล์จาก Index38.txt เป็น Index.html ให้แก้ชื่อไฟล์ในบรรทัดถัดไปด้วย !!!
+      # --- !!! แก้ไขบรรทัดข้างล่างนี้ !!! ---
+      # เปลี่ยน Index.html ให้เป็นชื่อไฟล์ที่ถูกต้องของคุณ
       - name: Replace Token Placeholder
         run: |
-          sed -i 's|{{secrets.GH_TOKEN}}|${{ secrets.GH_TOKEN }}|g' Index38.txt
+          sed -i 's|{{secrets.GH_TOKEN}}|${{ secrets.GH_TOKEN }}|g' Index.html
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      # ------------------------------------
 
-      # 3. นำไฟล์ที่แก้ไขแล้วทั้งหมดไป deploy ที่หน้าเว็บ GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
