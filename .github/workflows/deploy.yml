@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch: # เพิ่มบรรทัดนี้เพื่ออนุญาตให้รันด้วยมือได้
 
 permissions:
   contents: write
@@ -18,6 +19,13 @@ jobs:
       - name: Replace Token Placeholder
         run: |
           sed -i 's|GITHUB_TOKEN_PLACEHOLDER|${{ secrets.GH_TOKEN }}|g' Index.html
+
+      # --- นี่คือ "กล้องวงจรปิด" ที่เราเพิ่มเข้ามา ---
+      - name: Verify Token Replacement (DEBUG)
+        run: |
+          echo "--- Checking TOKEN line in Index.html ---"
+          grep 'TOKEN:' Index.html
+          echo "-----------------------------------------"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
