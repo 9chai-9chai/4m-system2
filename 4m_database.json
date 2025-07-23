@@ -1,8 +1,4 @@
-{
-  "reports": [],
-  "masterData": {
-    "parts": [],
-    "lines": [],
-    "responsibles": []
-  }
-}
+fetch('4m_database.json').then(res => res.json()).then(data => {
+  reports = data.reports;
+  // render ...
+});
