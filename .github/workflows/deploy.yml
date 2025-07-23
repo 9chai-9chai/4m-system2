@@ -18,7 +18,7 @@ jobs:
 
       - name: Replace Token Placeholder
         run: |
-          sed -i 's|GITHUB_TOKEN_PLACEHOLDER|${{ secrets.GH_TOKEN }}|g' Index.html
+          sed -i 's|GITHUB_TOKEN_PLACEHOLDER|${{ secrets.GH_TOKEN }}|g' index.html
 
       # --- นี่คือ "กล้องวงจรปิด" ที่เราเพิ่มเข้ามา ---
       - name: Verify Token Replacement (DEBUG)
