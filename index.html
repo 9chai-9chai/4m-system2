@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION ---
     const { jsPDF } = window.jspdf;
     const TELEGRAM_CONFIG = {
-        BOT_TOKEN: '7698218579:AAHb0vK959U_IXbRBYEmaXBGIxP3IsKn3uo',
+        BOT_TOKEN: '7698218579:AAHb0vK959U_IXbRBYEmaXBGIxP3IsKn3uo', // ☢️ WARNING: This token is publicly visible
         CHAT_ID: '7956717161',
         BASE_URL: 'https://9chai-9chai.github.io/4m-system2/'
     };
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modals: `<div id="actionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50"><div class="bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]"><div class="p-4 border-b"><h3 id="actionModalTitle" class="text-lg font-bold">Action</h3></div><form id="actionForm" class="p-4 space-y-4 flex-grow overflow-y-auto"><input type="hidden" id="actionReportId"><input type="hidden" id="actionName"><div class="space-y-4"><div id="deptHeadActionSection" class="hidden space-y-2"><label class="block text-sm font-medium text-gray-700">การดำเนินการโดย หน.แผนก (เลือกได้หลายข้อ)</label><div id="deptHeadCheckboxes" class="grid grid-cols-1 gap-2 border rounded-md p-2 bg-gray-50"></div></div><div id="sectionHeadActionSection" class="hidden space-y-2"><label class="block text-sm font-medium text-gray-700">การดำเนินการโดย หน.ส่วน (เลือกได้หลายข้อ)</label><div id="sectionHeadCheckboxes" class="grid grid-cols-1 gap-2 border rounded-md p-2 bg-gray-50"></div></div><div id="groupLeaderActionSection" class="hidden space-y-2"><label class="block text-sm font-medium text-gray-700">การยืนยันโดย หัวหน้ากลุ่ม (เลือกได้หลายข้อ)</label><div id="groupLeaderCheckboxes" class="grid grid-cols-1 gap-2 border rounded-md p-2 bg-gray-50"></div></div><div><label for="actionUser" class="block text-sm font-medium text-gray-700">ชื่อผู้ดำเนินการ</label><input type="text" id="actionUser" required class="mt-1 block w-full rounded-md border-gray-300"></div><div><label for="actionNotes" class="block text-sm font-medium text-gray-700">บันทึก / ความคิดเห็นเพิ่มเติม</label><textarea id="actionNotes" rows="3" class="mt-1 block w-full rounded-md border-gray-300"></textarea></div><div><label for="actionEvidence" class="block text-sm font-medium text-gray-700">แนบหลักฐาน (รูปภาพ) <span class="text-red-600 font-bold">*จำเป็น</span></label><input type="file" id="actionEvidence" accept="image/*" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"><img id="actionImagePreview" class="hidden mt-2 max-h-40 rounded"></div></div></form><div class="p-4 bg-gray-50 border-t flex justify-end space-x-3"><button type="button" class="modal-close-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">ยกเลิก</button><button type="submit" form="actionForm" id="actionSubmitBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg">ยืนยัน</button></div></div></div><div id="qaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50"><div class="bg-white rounded-lg shadow-xl w-full max-w-md flex flex-col max-h-[90vh]"><div class="p-4 border-b"><h3 class="text-lg font-bold">บันทึกผลตรวจสอบ (Verification)</h3></div><form id="qaForm" class="p-4 space-y-4 flex-grow overflow-y-auto"><input type="hidden" id="qaReportId"><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700">ผลการตรวจสอบคุณภาพ</label><div class="flex items-center space-x-4 mt-1"><label class="flex items-center"><input type="radio" name="qaResult" value="OK" class="text-green-600" required><span class="ml-2 text-green-700 font-semibold">OK</span></label><label class="flex items-center"><input type="radio" name="qaResult" value="NG" class="text-red-600"><span class="ml-2 text-red-700 font-semibold">NG</span></label></div></div><div id="defectSection" class="hidden"><label for="defectCode" class="block text-sm font-medium text-gray-700">รหัสของเสีย (ถ้ามี)</label><select id="defectCode" class="mt-1 block w-full rounded-md border-gray-300"></select></div><div><label for="verifiedBy" class="block text-sm font-medium text-gray-700">ชื่อผู้ตรวจสอบ (QA)</label><input type="text" id="verifiedBy" required placeholder="เช่น สุภาพร QC" class="mt-1 block w-full rounded-md border-gray-300"></div><div><label for="qaEvidence" class="block text-sm font-medium text-gray-700">แนบหลักฐาน (รูปภาพ) <span class="text-red-600 font-bold">*จำเป็น</span></label><input type="file" id="qaEvidence" accept="image/*" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"><img id="qaImagePreview" class="hidden mt-2 max-h-40 rounded"></div></div></form><div class="p-4 bg-gray-50 border-t flex justify-end space-x-3"><button type="button" class="modal-close-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">ยกเลิก</button><button type="submit" form="qaForm" class="bg-blue-600 text-white px-4 py-2 rounded-lg">ยืนยันผล</button></div></div></div><div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50"><div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg"><h3 class="text-lg font-bold mb-4">ตั้งค่า Master Data</h3><form id="settingsForm" class="space-y-4"><div><label for="masterParts" class="block text-sm font-medium text-gray-700">รายชื่อชิ้นงาน (คั่นด้วยลูกน้ำ ,)</label><textarea id="masterParts" rows="3" class="mt-1 block w-full rounded-md border-gray-300"></textarea></div><div><label for="masterLines" class="block text-sm font-medium text-gray-700">ไลน์ผลิต (คั่นด้วยลูกน้ำ ,)</label><textarea id="masterLines" rows="3" class="mt-1 block w-full rounded-md border-gray-300"></textarea></div><div><label for="masterResponsibles" class="block text-sm font-medium text-gray-700">ผู้รับผิดชอบ (คั่นด้วยลูกน้ำ ,)</label><textarea id="masterResponsibles" rows="3" class="mt-1 block w-full rounded-md border-gray-300"></textarea></div></form><div class="mt-6 flex justify-end space-x-3"><button type="button" class="modal-close-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">ปิด</button><button type="button" id="saveSettingsBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg">บันทึกค่า</button></div></div></div><div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50"><div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">ประวัติการดำเนินการ</h3><div><button id="exportHistoryBtn" class="bg-green-100 text-green-800 text-xs font-semibold py-1 px-2 rounded-md hover:bg-green-200 flex items-center space-x-1"><i data-feather="download" class="w-3 h-3"></i><span>Export Excel</span></button></div></div><div id="historyContent" class="text-sm space-y-3 max-h-80 overflow-y-auto"></div><div class="mt-4 flex justify-end"><button type="button" class="modal-close-btn text-gray-500 hover:text-gray-700">ปิด</button></div></div></div><div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50"><div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"><h3 class="text-lg font-bold mb-4">Export Board เป็น PDF</h3><p class="text-sm text-gray-600 mb-4">เลือกสถานะของ Card ที่ต้องการ Export</p><form id="exportForm" class="space-y-2"></form><div class="mt-6 flex justify-end space-x-3"><button type="button" class="modal-close-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">ยกเลิก</button><button type="button" id="exportPdfBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Export to PDF</button></div></div></div><div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-[100]"><div class="flex flex-col items-center"><div class="spinner"></div><p id="loadingText" class="text-white text-lg mt-4">กำลังประมวลผล...</p></div></div>`
     };
 
-    // --- STATIC DATA (เหมือนเดิม) ---
+    // --- STATIC DATA ---
     const REASONS_BY_TYPE = {'Man': ['พนักงานใหม่','พนักงานขาดงาน/ลา','สลับตำแหน่ง/หน้าที่','หัวหน้างานใหม่','พนักงานทักษะไม่พอ','ลดจำนวนคนในไลน์','เพิ่มกะ/คนทำงาน','เปลี่ยน Job Leader','ไม่ปฏิบัติตาม WI','ความเหนื่อยล้า/สุขภาพ'],'Machine': ['เปลี่ยนแม่พิมพ์ (Mold)','เครื่องจักร Breakdown','เปลี่ยน Parameter ฉีด','ซ่อมบำรุงฉุกเฉิน','เปลี่ยน Jig/Fixture','ติดตั้งเครื่องจักรใหม่','ระบบไฟฟ้า/ลมอัดขัดข้อง','เครื่องมือวัดเสีย/ไม่ Calibrate','เปลี่ยน Robot Program','Cooling System มีปัญหา'],'Material': ['เปลี่ยน Lot วัตถุดิบ','เปลี่ยนเกรด/Supplier','ใช้วัสดุทดแทน','วัตถุดิบหมดสต็อก','วัตถุดิบ Spec ไม่ตรง','เปลี่ยนสี/Masterbatch','เปลี่ยน Packaging','วัตถุดิบมีความชื้นสูง','ใช้ Re-grind material','ส่วนผสม/อัตราส่วนผิด'],'Method': ['เปลี่ยน Work Instruction (WI)','ลด/เพิ่ม Cycle Time','เพิ่ม/ลดขั้นตอนทำงาน','เปลี่ยน Layout การผลิต','ทดลองงานใหม่ (Trial)','เปลี่ยนวิธีการตรวจสอบ','เปลี่ยนวิธีการPacking','ปรับปรุง Kaizen','ทำงานไม่ตามขั้นตอน','วิธีการ Set up เปลี่ยนไป']};
     const COUNTERMEASURES_BY_TYPE = { 'Man': ['หยุดไลน์และแจ้งหัวหน้า','เปลี่ยนคนมีทักษะมาทำแทน','หัวหน้างานสอนและควบคุม','ตรวจสอบ 100% ท้ายไลน์','จัดทำ OPL สอนงานด่วน','วิศวกร/เทคนิคเชี่ยนยืนยัน','บันทึกประวัติการอบรม','ทำงานคู่กับคนเก่า','จัดอบรมซ้ำ', 'Job Observation (เฝ้าดูการทำงาน)'], 'Machine': ['หยุดเครื่องและแจ้งซ่อม','วิศวกรยืนยัน Parameter','ตรวจสอบ First-off 5 ชิ้น','เฝ้าระวังเครื่องจักรพิเศษ','เพิ่มความถี่ตรวจชิ้นงาน','แยก Lot ที่ได้รับผลกระทบ','ห้ามปรับ Parameter','ตรวจ Calibrate เครื่องมือวัด','ทำความสะอาดแม่พิมพ์/เครื่อง','บันทึกประวัติซ่อม'], 'Material': ['หยุดใช้วัตถุดิบที่มีปัญหา','ส่ง QA ตรวจสอบ','Trial run วัตถุดิบใหม่','แยก/ติดป้าย Lot ใหม่','ติดต่อ Supplier ยืนยัน Spec','อบไล่ความชื้นก่อนใช้','ตรวจสอบย้อนกลับ Lot ที่ใช้','ตรวจสอบสี/ลักษณะกายภาพ','ขอเอกสาร CoA','กักกันสินค้าต้องสงสัย'], 'Method': ['หยุดไลน์ทบทวน WI','ออก WI ชั่วคราว','QA ยืนยันคุณภาพก่อนเดินงาน','สื่อสารการเปลี่ยนแปลงทั่วถึง','วิศวกรยืนยันการเปลี่ยนแปลง','บันทึกใน Log Book','Audit กระบวนการหลังเปลี่ยน','ตรวจ First/Last Piece','กำหนดจุดตรวจสอบพิเศษ','ทบทวน FMEA/Control Plan', 'Qa เพิ่มความถี่การตรวจตามตาราง AQL 65%'] };
     const SURVEILLANCE_MEASURES = ['ติดป้ายเหลือง \'4M Change\' ที่กล่อง/Rack และแจ้ง QA', 'พนักงานตรวจสอบชิ้นงาน 100% ก่อนลงกล่อง', 'แยก Lot การผลิต 3 ชั่วโมงแรกเพื่อรอผล QA', 'วิศวกร/เทคนิคเชี่ยนตรวจสอบ Parameter ซ้ำใน 1 ชม.', 'บันทึกข้อมูลในใบบันทึกการควบคุมพิเศษ', 'เก็บตัวอย่าง First Shot / Last Shot ของแต่ละกะ', 'ถ่ายรูปชิ้นงาน OK/NG ติดไว้ที่หน้าเครื่อง', 'สื่อสารการเปลี่ยนแปลงให้พนักงานกะต่อไปรับทราบ', 'ห้ามส่งมอบงานให้คลังสินค้าจนกว่าจะได้รับอนุมัติ', 'เพิ่มความถี่ในการตรวจสอบด้วยเครื่องมือวัด', 'หัวหน้ากลุ่ม สุ่มตรวจ 5 set ทุก 2 ชม.', 'หัวหน้ากลุ่ม สุ่มตรวจ 5 set ทุก 4 ชม.', 'QA เพิ่มความถี่การตรวจตามตาราง AQL 65%'];
@@ -93,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeDomElements(); 
         loadMasterData(); 
         loadData(); 
-        setupEventListeners();
         
         const params = new URLSearchParams(window.location.search);
         const highlightId = params.get('highlight');
@@ -128,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         switchView(initialView);
+        setupEventListeners(); // [CRITICAL FIX] Call this AFTER setting initial view
     }
 
     function switchView(viewName) {
@@ -154,9 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // [REVISED] --- EVENT HANDLING USING DELEGATION (STABLE) ---
+    // [REVISED & VERIFIED] --- EVENT HANDLING (STABLE) ---
     function setupEventListeners() {
-        // Global listeners that are always active
+        // Global listeners for elements that are always present
         document.querySelector('nav').addEventListener('click', (e) => {
             const tabButton = e.target.closest('.tab-button');
             if (tabButton) switchView(tabButton.dataset.view);
@@ -176,53 +176,43 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (target.id === 'exportPdfBtn') generateBoardPdf();
             else if (target.id === 'exportHistoryBtn') exportHistoryToExcel(parseInt(target.dataset.id));
         });
-        
-        // Listen for events bubbling up to the main view container
+
+        // Event listeners for content that changes inside viewContainer
         appDOMElements.viewContainer.addEventListener('click', (e) => {
-            const target = e.target.closest('button');
-            if (!target) return;
-            if (target.id === 'clearFiltersBtn') {
+            const button = e.target.closest('button');
+            if (!button) return;
+
+            if (button.id === 'clearFiltersBtn') {
                 document.getElementById('filterText').value = '';
                 document.getElementById('filterStatus').value = '';
                 document.getElementById('filterRisk').value = '';
                 renderBoard();
             }
-            else if (target.classList.contains('action-btn')) openActionModal(parseInt(target.dataset.id), target.dataset.action);
-            else if (target.classList.contains('remind-btn')) notifyReminder(parseInt(target.dataset.id));
-            else if (target.classList.contains('history-btn')) showHistoryModal(target);
-            else if (target.classList.contains('edit-btn')) handleEditClick(target);
-            else if (target.classList.contains('export-card-btn')) exportCardAsPng(target);
-            else if (target.classList.contains('delete-btn')) handleDeleteClick(target);
+            else if (button.classList.contains('action-btn')) openActionModal(parseInt(button.dataset.id), button.dataset.action);
+            else if (button.classList.contains('remind-btn')) notifyReminder(parseInt(button.dataset.id));
+            else if (button.classList.contains('history-btn')) showHistoryModal(button);
+            else if (button.classList.contains('edit-btn')) handleEditClick(button);
+            else if (button.classList.contains('export-card-btn')) exportCardAsPng(button);
+            else if (button.classList.contains('delete-btn')) handleDeleteClick(button);
         });
         
         appDOMElements.viewContainer.addEventListener('submit', (e) => {
              e.preventDefault();
              if (e.target.id === 'changeForm') handleFormSubmit(e);
         });
-
-        appDOMElements.modalContainer.addEventListener('submit', (e) => {
-             e.preventDefault();
-             if (e.target.id === 'actionForm') handleActionSubmit(e);
-             else if (e.target.id === 'qaForm') handleQaSubmit(e);
-        });
         
-        document.body.addEventListener('change', (e) => {
-            const target = e.target;
-            if (target.id === 'changeType') updateDynamicFormElements();
-            else if (target.closest('#reasonCheckboxes')) calculateRiskScore();
-            else if (target.id === 'surveillanceOtherCheckbox') document.getElementById('surveillanceOtherText').classList.toggle('hidden', !target.checked);
-            else if (target.matches('input[type="file"]')) {
-                const previewId = target.id.replace('Evidence', 'ImagePreview');
+        appDOMElements.viewContainer.addEventListener('change', (e) => {
+            if (e.target.id === 'changeType') updateDynamicFormElements();
+            else if (e.target.closest('#reasonCheckboxes')) calculateRiskScore();
+            else if (e.target.id === 'surveillanceOtherCheckbox') document.getElementById('surveillanceOtherText').classList.toggle('hidden', !e.target.checked);
+            else if (e.target.matches('input[type="file"]')) {
+                const previewId = e.target.id.replace('Evidence', 'ImagePreview');
                 const preview = document.getElementById(previewId);
-                const file = target.files[0];
+                const file = e.target.files[0];
                 if (preview && file) {
                     preview.src = URL.createObjectURL(file);
                     preview.classList.remove('hidden');
                 }
-            }
-             else if (target.matches('input[name="qaResult"]')) {
-                const qaModal = target.closest('#qaModal');
-                if(qaModal) qaModal.querySelector('#defectSection').style.display = target.value === 'NG' ? 'block' : 'none';
             }
         });
 
@@ -230,6 +220,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.matches('#filterText, #filterStatus, #filterRisk')) {
                  if (isHighlighting) return;
                  renderBoard();
+            }
+        });
+
+        // Event listeners for modals
+        appDOMElements.modalContainer.addEventListener('submit', (e) => {
+             e.preventDefault();
+             if (e.target.id === 'actionForm') handleActionSubmit(e);
+             else if (e.target.id === 'qaForm') handleQaSubmit(e);
+        });
+
+        appDOMElements.modalContainer.addEventListener('change', (e) => {
+            if (e.target.matches('input[name="qaResult"]')) {
+                const qaModal = e.target.closest('#qaModal');
+                if(qaModal) qaModal.querySelector('#defectSection').style.display = e.target.value === 'NG' ? 'block' : 'none';
             }
         });
     }
@@ -256,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateDynamicFormElements() { const type = document.getElementById('changeType')?.value; updateCheckboxes(document.getElementById('reasonCheckboxes'), REASONS_BY_TYPE[type] || []); updateCheckboxes(document.getElementById('mainCountermeasuresCheckboxes'), COUNTERMEASURES_BY_TYPE[type] || []); updateCheckboxes(document.getElementById('surveillanceMeasuresCheckboxes'), SURVEILLANCE_MEASURES); calculateRiskScore(); }
     function updateCheckboxes(container, options) { if (!container) return; container.innerHTML = options.length === 0 ? `<p class="text-gray-400 col-span-full">กรุณาเลือกประเภท 4M ก่อน</p>` : options.map((option) => `<label class="flex items-center text-sm"><input type="checkbox" value="${option}" class="rounded border-gray-300"><span class="ml-2 text-gray-700">${option}</span></label>`).join(''); }
     function getCheckedValues(container) { if (!container) return []; return Array.from(container.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value); }
-    async function sendTelegramNotification(message, actionUrl = null) { if (!TELEGRAM_CONFIG.BOT_TOKEN || !TELEGRAM_CONFIG.CHAT_ID) return; const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.BOT_TOKEN}/sendMessage`; const params = new URLSearchParams({ chat_id: TELEGRAM_CONFIG.CHAT_ID, text: message, parse_mode: 'Markdown' }); if (actionUrl) { params.append('reply_markup', JSON.stringify({ inline_keyboard: [[ { text: '📋 ดูบน 4M Board', url: actionUrl } ]] })); } try { await fetch(`${url}?${params.toString()}`); } catch (error) { console.error('Error sending Telegram notification:', error); } }
+    async function sendTelegramNotification(message, actionUrl = null) { if (!TELEGRAM_CONFIG.BOT_TOKEN || !TELEGRAM_CONFIG.CHAT_ID) return; const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.BOT_TOKEN}/sendMessage`; const params = new URLSearchParams({ chat_id: TELEGRAM_CONFIG.CHAT_ID, text: message, parse_mode: 'Markdown' }); if (actionUrl) { params.append('reply_markup', JSON.stringify({ inline_keyboard: [[ { text: '📋 ดูบน 4M Board', url: actionUrl } ]] })); } try { const response = await fetch(`${url}?${params.toString()}`); const result = await response.json(); if (!result.ok) { throw new Error(result.description); } console.log('Telegram notification sent:', result); } catch (error) { console.error('Error sending Telegram notification:', error); showNotification(`ส่งแจ้งเตือน Telegram ไม่สำเร็จ: ${error.message}`); } }
     function notifyNewCase(report) { const riskEmoji = report.risk.level === 'High' ? '🚨' : (report.risk.level === 'Medium' ? '⚠️' : 'ℹ️'); const message = `${riskEmoji} *New 4M Change*\n*Case ID:* \`${report.id}\`\n*Part:* ${report.partName}\n*Line:* ${report.line}\n*Risk:* ${report.risk.level} (${report.risk.score})\n--------------------------------------\n👤 *เรียน:* ${report.countermeasure.responsible}\n👉 *โปรดดำเนินการขั้นต่อไป: รับทราบปัญหา*`.trim(); const reportData = encodeURIComponent(JSON.stringify(report)); const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`; sendTelegramNotification(message, actionUrl); }
     function notifyUpdate(report) { const statusInfo = STATUS_WORKFLOW[report.status]; const lastAction = report.history[report.history.length - 1]; const message = `🔄 *Case Updated*\n*Case ID:* \`${report.id}\` (${report.partName})\n*Updated by:* ${lastAction.user}\n*New Status:* *${statusInfo.text}*\n--------------------------------------\n👤 *เรียน:* ${statusInfo.role || report.countermeasure.responsible}\n👉 *โปรดดำเนินการขั้นต่อไป:* ${statusInfo.guidance || 'ทบทวนเคส'}`.trim(); const reportData = encodeURIComponent(JSON.stringify(report)); const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`; sendTelegramNotification(message, actionUrl); }
     function notifyReminder(reportId) { const report = reports.find(r => r.id === reportId); if (!report || !confirm(`ต้องการส่งแจ้งเตือนสำหรับเคส #${report.id} (${report.partName}) หรือไม่?`)) return; const statusInfo = STATUS_WORKFLOW[report.status]; const message = `🔔 *Reminder: 4M Change*\n*Case ID:* \`${report.id}\` (${report.partName})\n*Current Status:* ${statusInfo.text}\n--------------------------------------\n‼️ *เรียน:* ${statusInfo.role}\n👉 *โปรดดำเนินการขั้นต่อไป:* ${statusInfo.guidance}`.trim(); const reportData = encodeURIComponent(JSON.stringify(report)); const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`; sendTelegramNotification(message, actionUrl); showNotification('ส่งแจ้งเตือนสำเร็จ!'); }
@@ -268,18 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function exportHistoryToExcel(reportId) { const report = reports.find(r => r.id === reportId); if (!report || !report.history || report.history.length === 0) { showNotification('ไม่มีประวัติสำหรับ Export'); return; } const dataForExport = report.history.map(h => ({ 'Timestamp': new Date(h.timestamp).toLocaleString('th-TH'), 'Action': h.action, 'User': h.user, 'Notes': h.notes || '', 'Evidence': h.evidence ? 'Yes' : 'No' })); const ws = XLSX.utils.json_to_sheet(dataForExport); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, `History_Case_${reportId}`); XLSX.writeFile(wb, `4M_History_Case_${reportId}.xlsx`); }
     function renderDashboard() { const container = document.getElementById('view-container'); if(reports.length === 0) { container.innerHTML = '<p class="text-center text-gray-500 py-10"><i class="w-16 h-16 mx-auto text-gray-400" data-feather="bar-chart-2"></i><span class="mt-4 block">ยังไม่มีข้อมูลสำหรับแสดงผล</span></p>'; feather.replace(); return; } const reasonCounts = reports.flatMap(r => r.reason.split('; ').filter(reason => !reason.startsWith('อื่นๆ:'))).reduce((acc, reason) => { acc[reason] = (acc[reason] || 0) + 1; return acc; }, {}); const top5Reasons = Object.entries(reasonCounts).sort(([,a],[,b]) => b-a).slice(0, 5); createChart('reasonsChart', 'bar', top5Reasons.map(item => item[0]), top5Reasons.map(item => item[1]), 'จำนวนครั้ง'); const typeCounts = reports.reduce((acc, r) => { acc[r.type] = (acc[r.type] || 0) + 1; return acc; }, {}); createChart('typesChart', 'pie', Object.keys(typeCounts), Object.values(typeCounts)); const lineCounts = reports.reduce((acc, r) => { acc[r.line] = (acc[r.line] || 0) + 1; return acc; }, {}); const top5Lines = Object.entries(lineCounts).sort(([,a],[,b]) => b-a).slice(0, 5); createChart('linesChart', 'bar', top5Lines.map(item => item[0]), top5Lines.map(item => item[1]), 'จำนวนครั้ง'); const defectCounts = reports.filter(r => r.qa.result === 'NG' && r.qa.defect && r.qa.defect !== 'ไม่มี').reduce((acc, r) => { acc[r.qa.defect] = (acc[r.qa.defect] || 0) + 1; return acc; }, {}); createChart('defectsChart', 'bar', Object.keys(defectCounts), Object.values(defectCounts), 'จำนวนครั้ง'); }
     function createChart(canvasId, type, labels, data, label) { const ctx = document.getElementById(canvasId)?.getContext('2d'); if (!ctx) return; if(appDOMElements.charts && appDOMElements.charts[canvasId]) appDOMElements.charts[canvasId].destroy(); if(!appDOMElements.charts) appDOMElements.charts = {}; appDOMElements.charts[canvasId] = new Chart(ctx, { type: type, data: { labels: labels, datasets: [{ label: label, data: data, backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#6b7280', '#ec4899', '#6366f1'] }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: type === 'pie' } } } }); }
-    
-    function showLoading(message = 'กำลังประมวลผล...') {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) {
-            overlay.querySelector('#loadingText').textContent = message;
-            overlay.classList.remove('hidden');
-        }
-    }
-    function hideLoading() {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) overlay.classList.add('hidden');
-    }
+    function showLoading(message = 'กำลังประมวลผล...') { const overlay = document.getElementById('loadingOverlay'); if (overlay) { overlay.querySelector('#loadingText').textContent = message; overlay.classList.remove('hidden'); } }
+    function hideLoading() { const overlay = document.getElementById('loadingOverlay'); if (overlay) overlay.classList.add('hidden'); }
 
     // --- INITIALIZE APP ---
     init();
@@ -288,4 +282,4 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- END OF NEW JAVASCRIPT LOGIC -->
 
 </body>
-    </html>
+</html>
