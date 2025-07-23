@@ -15,13 +15,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- !!! แก้ไขบรรทัดข้างล่างนี้ !!! ---
-      # เปลี่ยน Index.html ให้เป็นชื่อไฟล์ที่ถูกต้องของคุณ
       - name: Replace Token Placeholder
         run: |
-           sed -i 's|GITHUB_TOKEN_PLACEHOLDER|${{ secrets.GH_TOKEN }}|g' Index.html
-             GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      # ------------------------------------
+          sed -i 's|GITHUB_TOKEN_PLACEHOLDER|${{ secrets.GH_TOKEN }}|g' Index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
