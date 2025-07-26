@@ -208,14 +208,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (highlightId && reportJson) {
             try {
                 const newReportFromUrl = JSON.parse(decodeURIComponent(reportJson));
-                const reportExists = reports.some(r => r.id == newReportFromUrl.id);
+                const reportIndex = reports.findIndex(r => r.id == newReportFromUrl.id);
 
-                if (!reportExists) {
+                if (reportIndex > -1) {
+                    // Update existing report with the new (potentially lightweight) data from the URL.
+                    // This ensures the status and latest history entry are up-to-date.
+                    // The user will retain their locally stored full evidence.
+                    reports[reportIndex] = newReportFromUrl;
+                } else {
+                    // Add new report if it doesn't exist locally.
                     reports.unshift(newReportFromUrl);
-                    saveData();
                 }
+                saveData(); // Save changes
+                
             } catch (e) {
                 console.error("Could not parse report data from URL parameter:", e);
+                alert("เกิดข้อผิดพลาดในการอ่านข้อมูลจากลิงก์ อาจเนื่องมาจาก URL ไม่สมบูรณ์");
             }
         }
         
@@ -224,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isHighlighting = true; 
             initialView = 'board';
             highlightedReportId = parseInt(highlightId);
+            // Clean URL to avoid re-processing on refresh and remove large data param
             const cleanUrl = new URL(window.location);
             cleanUrl.searchParams.delete('highlight');
             cleanUrl.searchParams.delete('view'); 
@@ -330,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const reportId = document.getElementById('reportId').value;
         const initialFile = document.getElementById('initialEvidence')?.files[0];
 
-        // On new report, evidence is required.
         if (!reportId && !initialFile) {
             alert('กรุณาแนบรูปภาพหลักฐานการเปิดเคส');
             return;
@@ -370,7 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (reportId) {
                 const reportIndex = reports.findIndex(r => r.id == reportId);
                 if (reportIndex > -1) {
-                    // Preserve history and other non-form fields
                     const originalReport = reports[reportIndex];
                     Object.assign(originalReport, reportData);
                     addHistory(originalReport, 'แก้ไขข้อมูล', reporterName, 'แก้ไขข้อมูลในฟอร์ม', null);
@@ -415,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('partName').value = report.partName;
         document.getElementById('reporterName').value = report.reporter;
         
-        // Show the evidence section but make it optional for editing
         const initialEvidenceSection = document.querySelector('.border-red-500');
         if (initialEvidenceSection) {
              initialEvidenceSection.style.display = 'block';
@@ -628,7 +634,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         
         card.querySelector('.action-btn')?.addEventListener('click', (e) => openActionModal(parseInt(e.currentTarget.dataset.id), e.currentTarget.dataset.action));
-        card.querySelector('.remind-btn')?.addEventListener('click', (e) => notifyReminder(parseInt(e.currentTarget.dataset.id)));
+        card.querySelector('.remind-btn')?.addEventListener('click', (e) => {
+            const reportId = parseInt(e.currentTarget.dataset.id);
+            const reportToRemind = reports.find(r => r.id === reportId);
+            if (reportToRemind) {
+                notifyReminder(reportToRemind);
+            }
+        });
         card.querySelector('.history-btn')?.addEventListener('click', showHistoryModal);
         card.querySelector('.edit-btn')?.addEventListener('click', handleEditClick);
         card.querySelector('.export-card-btn')?.addEventListener('click', exportCardAsPng);
@@ -647,11 +659,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const modal = appDOMElements.modals.action;
+        const form = modal.querySelector('#actionForm');
+        form.reset();
         modal.querySelector('#actionModalTitle').textContent = statusInfo.buttonText;
         modal.querySelector('#actionReportId').value = reportId;
         modal.querySelector('#actionName').value = action;
-        modal.querySelector('form').reset(); 
-
+        
         modal.querySelector('#deptHeadActionSection').classList.add('hidden');
         modal.querySelector('#sectionHeadActionSection').classList.add('hidden');
         modal.querySelector('#groupLeaderActionSection').classList.add('hidden');
@@ -677,12 +690,12 @@ document.addEventListener('DOMContentLoaded', () => {
         preview.classList.add('hidden');
         
         const submitBtn = modal.querySelector('#actionSubmitBtn');
-        submitBtn.className = `bg-blue-600 text-white px-4 py-2 rounded-lg ${statusInfo.buttonClass}`;
+        submitBtn.className = `bg-blue-600 text-white px-4 py-2 rounded-lg`;
         submitBtn.textContent = statusInfo.buttonText;
         
         modal.classList.remove('hidden');
         
-        modal.querySelector('#actionForm').onsubmit = handleActionSubmit;
+        form.onsubmit = handleActionSubmit;
         modal.querySelector('#actionEvidence').onchange = (e) => {
             const file = e.target.files[0];
             if (file) { preview.src = URL.createObjectURL(file); preview.classList.remove('hidden'); }
@@ -733,13 +746,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         appDOMElements.modals.loading.classList.remove('hidden');
         const evidence = await compressImage(file);
-        appDOMElements.modals.loading.classList.add('hidden');
         
         report.status = STATUS_WORKFLOW[action].next;
         addHistory(report, STATUS_WORKFLOW[action].buttonText, user, combinedNotes, evidence);
         saveData();
         renderBoard();
+        notifyStateChange(report);
         appDOMElements.modals.action.classList.add('hidden');
+        appDOMElements.modals.loading.classList.add('hidden');
+
     }
 
     function openQaModal(id) {
@@ -785,7 +800,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             appDOMElements.modals.loading.classList.remove('hidden');
             const evidence = await compressImage(file);
-            appDOMElements.modals.loading.classList.add('hidden');
             
             const result = qaForm.qaResult.value;
             report.qa = {
@@ -801,6 +815,8 @@ document.addEventListener('DOMContentLoaded', () => {
             saveData();
             renderBoard();
             appDOMElements.modals.qa.classList.add('hidden');
+            appDOMElements.modals.loading.classList.add('hidden');
+
         }
     }
     
@@ -810,14 +826,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!report) return;
 
         const modal = appDOMElements.modals.history;
-        const historyContent = (report.history || []).slice().reverse().map(h => 
-            `<div class="border-b pb-2 mb-2">
+        const historyContent = (report.history || []).slice().reverse().map(h => {
+            const evidenceLink = h.evidence ? (h.evidence.startsWith('data:image') ? `<a href="${h.evidence}" target="_blank" class="text-blue-600 hover:underline text-sm mt-1 inline-block">ดูหลักฐาน 📸</a>` : `<span class="text-gray-400 text-sm mt-1 inline-block">(มีหลักฐานในเครื่องอื่น)</span>`) : '';
+            return `<div class="border-b pb-2 mb-2">
                 <p><strong>${h.action}</strong> โดย ${h.user || 'N/A'}</p>
                 <p class="text-gray-500 text-xs">${new Date(h.timestamp).toLocaleString('th-TH')}</p>
                 ${h.notes ? `<p class="mt-1 text-gray-800 bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap">${h.notes}</p>` : ''}
-                ${h.evidence ? `<a href="${h.evidence}" target="_blank" class="text-blue-600 hover:underline text-sm mt-1 inline-block">ดูหลักฐาน 📸</a>` : ''}
+                ${evidenceLink}
             </div>`
-        ).join('');
+        }).join('');
         modal.querySelector('#historyContent').innerHTML = historyContent || '<p class="text-center text-gray-500">ไม่มีประวัติ</p>';
 
         modal.querySelector('#exportHistoryBtn').onclick = () => exportHistoryToExcel(reportId);
@@ -903,40 +920,105 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // --- NOTIFICATIONS & EXTERNAL ---
+
+    /**
+     *  [NEW FUNCTION] Creates a lightweight version of the report object for URL embedding.
+     *  This function removes heavy Base64 image data to prevent URL truncation.
+     */
+    function createLightweightReportForUrl(report) {
+        // Deep copy to avoid modifying the original object in memory
+        const lightReport = JSON.parse(JSON.stringify(report));
+
+        // Remove heavy evidence data from the history array
+        if (lightReport.history && Array.isArray(lightReport.history)) {
+            lightReport.history.forEach(h => {
+                if (h.evidence) {
+                    h.evidence = "[Image Data Removed for URL]"; // Replace with a placeholder
+                }
+            });
+        }
+        // Remove heavy evidence data from the QA object
+        if (lightReport.qa && lightReport.qa.evidence) {
+            lightReport.qa.evidence = "[Image Data Removed for URL]";
+        }
+        
+        return lightReport;
+    }
+
     async function sendTelegramNotification(message, actionUrl = null) {
         if (!TELEGRAM_CONFIG.BOT_TOKEN || !TELEGRAM_CONFIG.CHAT_ID) return;
         const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.BOT_TOKEN}/sendMessage`;
+        
+        // Telegram has a URL length limit, so we check. This is a safety net.
+        if (actionUrl && actionUrl.length > 3000) { 
+             console.warn("Generated URL is very long and might be truncated by Telegram.", actionUrl.length);
+        }
+
         const params = new URLSearchParams({ chat_id: TELEGRAM_CONFIG.CHAT_ID, text: message, parse_mode: 'Markdown' });
         if (actionUrl) {
             params.append('reply_markup', JSON.stringify({
                 inline_keyboard: [[ { text: '📋 ดูบน 4M Board', url: actionUrl } ]]
             }));
         }
-        try { await fetch(`${url}?${params.toString()}`); } 
+        try { 
+            const response = await fetch(`${url}?${params.toString()}`); 
+            const result = await response.json();
+            if (!result.ok) {
+                console.error('Telegram API Error:', result.description);
+                // If the error is about URL being too long, we can alert the user.
+                if (result.description.includes("url is too long")) {
+                    alert("เกิดข้อผิดพลาด: ข้อมูลที่ส่งมีขนาดใหญ่เกินไป ทำให้ไม่สามารถสร้างลิงก์ได้");
+                }
+            }
+        } 
         catch (error) { console.error('Error sending Telegram notification:', error); }
     }
     
     function notifyNewCase(report) {
         const riskEmoji = report.risk.level === 'High' ? '🚨' : (report.risk.level === 'Medium' ? '⚠️' : 'ℹ️');
         const message = `${riskEmoji} *New 4M Change*\n*Case ID:* \`${report.id}\`\n*Part:* ${report.partName}\n*Line:* ${report.line}\n*Risk:* ${report.risk.level} (${report.risk.score})\n--------------------------------------\n👤 *เรียน:* ${report.countermeasure.responsible}\n👉 *โปรดดำเนินการขั้นต่อไป: รับทราบปัญหา*`.trim();
-        const reportData = encodeURIComponent(JSON.stringify(report));
+        
+        const lightReport = createLightweightReportForUrl(report); // Create lightweight version
+        const reportData = encodeURIComponent(JSON.stringify(lightReport));
         const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`;
+        
+        sendTelegramNotification(message, actionUrl);
+    }
+    
+    // Generic notification for state changes after initial creation
+    function notifyStateChange(report) {
+        const statusInfo = STATUS_WORKFLOW[report.status];
+        if (!statusInfo || !statusInfo.role) return; // Don't notify on 'Closed' or if no next role
+
+        const message = `🔄 *Update: 4M Change*\n*Case ID:* \`${report.id}\` (${report.partName})\n*New Status:* ${statusInfo.text}\n--------------------------------------\n👤 *เรียน:* ${statusInfo.role}\n👉 *โปรดดำเนินการขั้นต่อไป:* ${statusInfo.guidance}`.trim();
+        
+        const lightReport = createLightweightReportForUrl(report); // Create lightweight version
+        const reportData = encodeURIComponent(JSON.stringify(lightReport));
+        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`;
+
         sendTelegramNotification(message, actionUrl);
     }
 
     function notifyQaResult(report) {
         const resultEmoji = report.qa.result === 'OK' ? '✅' : '❌';
-        const message = `${resultEmoji} *QA Verification Result*\n*Case ID:* \`${report.id}\` (${report.partName})\n*Result:* *${report.qa.result}*\n${report.qa.result === 'NG' ? `*Defect:* ${report.qa.defect}\n` : ''}*Verified by:* ${report.qa.verifiedBy}\n--------------------------------------\n👤 *เรียน:* ${report.countermeasure.responsible}\n👉 *โปรดดำเนินการขั้นต่อไป*`.trim();
-        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&t=${Date.now()}`;
+        const message = `${resultEmoji} *QA Verification Result*\n*Case ID:* \`${report.id}\` (${report.partName})\n*Result:* *${report.qa.result}*\n${report.qa.result === 'NG' ? `*Defect:* ${report.qa.defect}\n` : ''}*Verified by:* ${report.qa.verifiedBy}\n--------------------------------------\n👤 *เรียน:* ${STATUS_WORKFLOW[report.status].role}\n👉 *โปรดดำเนินการขั้นต่อไป: ${STATUS_WORKFLOW[report.status].guidance}*`.trim();
+        
+        const lightReport = createLightweightReportForUrl(report); // Create lightweight version
+        const reportData = encodeURIComponent(JSON.stringify(lightReport));
+        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`;
+        
         sendTelegramNotification(message, actionUrl);
     }
 
-    function notifyReminder(reportId) {
-        const report = reports.find(r => r.id === reportId);
+    function notifyReminder(report) {
         if (!report || !confirm(`ต้องการส่งแจ้งเตือนสำหรับเคส #${report.id} (${report.partName}) หรือไม่?`)) return;
         const statusInfo = STATUS_WORKFLOW[report.status];
         const message = `🔔 *Reminder: 4M Change*\n*Case ID:* \`${report.id}\` (${report.partName})\n*Current Status:* ${statusInfo.text}\n--------------------------------------\n‼️ *เรียน:* ${statusInfo.role}\n👉 *โปรดดำเนินการขั้นต่อไป:* ${statusInfo.guidance}`.trim();
-        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&t=${Date.now()}`;
+        
+        const lightReport = createLightweightReportForUrl(report); // Create lightweight version
+        const reportData = encodeURIComponent(JSON.stringify(lightReport));
+        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`;
+        
         sendTelegramNotification(message, actionUrl);
         showNotification('ส่งแจ้งเตือนสำเร็จ!');
     }
@@ -946,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- UTILITIES & EXPORTS ---
-    function compressImage(file, maxWidth = 1024, quality = 0.8) {
+    function compressImage(file, maxWidth = 1024, quality = 0.7) { // slightly reduced quality for smaller files
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -1092,4 +1174,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+    </html>
