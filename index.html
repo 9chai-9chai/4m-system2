@@ -211,11 +211,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reportExists = reports.some(r => r.id == newReportFromUrl.id);
 
                 if (!reportExists) {
-                    reports.unshift(newReportFromUrl);
+                    reports.unshift(newReportFromUrl); // Add the new report
+                    saveData(); // Save it to the user's local storage
+                } else {
+                    // If report exists, update it with the data from URL to ensure it's the latest version
+                    const reportIndex = reports.findIndex(r => r.id == newReportFromUrl.id);
+                    reports[reportIndex] = newReportFromUrl;
                     saveData();
                 }
             } catch (e) {
                 console.error("Could not parse report data from URL parameter:", e);
+                alert("เกิดข้อผิดพลาดในการอ่านข้อมูลจากลิงก์ อาจเนื่องมาจาก URL ไม่สมบูรณ์");
             }
         }
         
@@ -224,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isHighlighting = true; 
             initialView = 'board';
             highlightedReportId = parseInt(highlightId);
+            // Clean URL to avoid re-processing on refresh
             const cleanUrl = new URL(window.location);
             cleanUrl.searchParams.delete('highlight');
             cleanUrl.searchParams.delete('view'); 
@@ -628,7 +635,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         
         card.querySelector('.action-btn')?.addEventListener('click', (e) => openActionModal(parseInt(e.currentTarget.dataset.id), e.currentTarget.dataset.action));
-        card.querySelector('.remind-btn')?.addEventListener('click', (e) => notifyReminder(parseInt(e.currentTarget.dataset.id)));
+        // --- CHANGE START: Pass the full report object to the reminder function ---
+        card.querySelector('.remind-btn')?.addEventListener('click', (e) => {
+            const reportId = parseInt(e.currentTarget.dataset.id);
+            const reportToRemind = reports.find(r => r.id === reportId);
+            if (reportToRemind) {
+                notifyReminder(reportToRemind);
+            }
+        });
+        // --- CHANGE END ---
         card.querySelector('.history-btn')?.addEventListener('click', showHistoryModal);
         card.querySelector('.edit-btn')?.addEventListener('click', handleEditClick);
         card.querySelector('.export-card-btn')?.addEventListener('click', exportCardAsPng);
@@ -693,7 +708,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const form = document.getElementById('actionForm');
         const id = parseInt(form.querySelector('#actionReportId').value);
-        const action = form.querySelector('#actionName').value;
         const report = reports.find(r => r.id === id);
         if (!report) return;
 
@@ -785,7 +799,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             appDOMElements.modals.loading.classList.remove('hidden');
             const evidence = await compressImage(file);
-            appDOMElements.modals.loading.classList.add('hidden');
+            appDOMELEMENTS.modals.loading.classList.add('hidden');
             
             const result = qaForm.qaResult.value;
             report.qa = {
@@ -800,7 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notifyQaResult(report);
             saveData();
             renderBoard();
-            appDOMElements.modals.qa.classList.add('hidden');
+            appDOMELEMENTS.modals.qa.classList.add('hidden');
         }
     }
     
@@ -912,7 +926,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 inline_keyboard: [[ { text: '📋 ดูบน 4M Board', url: actionUrl } ]]
             }));
         }
-        try { await fetch(`${url}?${params.toString()}`); } 
+        try { 
+            const response = await fetch(`${url}?${params.toString()}`); 
+            const result = await response.json();
+            if (!result.ok) {
+                console.error('Telegram API Error:', result.description);
+            }
+        } 
         catch (error) { console.error('Error sending Telegram notification:', error); }
     }
     
@@ -924,22 +944,27 @@ document.addEventListener('DOMContentLoaded', () => {
         sendTelegramNotification(message, actionUrl);
     }
 
+    // --- CHANGE START: Function now accepts the full report object ---
     function notifyQaResult(report) {
         const resultEmoji = report.qa.result === 'OK' ? '✅' : '❌';
         const message = `${resultEmoji} *QA Verification Result*\n*Case ID:* \`${report.id}\` (${report.partName})\n*Result:* *${report.qa.result}*\n${report.qa.result === 'NG' ? `*Defect:* ${report.qa.defect}\n` : ''}*Verified by:* ${report.qa.verifiedBy}\n--------------------------------------\n👤 *เรียน:* ${report.countermeasure.responsible}\n👉 *โปรดดำเนินการขั้นต่อไป*`.trim();
-        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&t=${Date.now()}`;
+        // Add the report data to the URL to ensure receivers can view it
+        const reportData = encodeURIComponent(JSON.stringify(report));
+        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`;
         sendTelegramNotification(message, actionUrl);
     }
-
-    function notifyReminder(reportId) {
-        const report = reports.find(r => r.id === reportId);
+    
+    function notifyReminder(report) {
         if (!report || !confirm(`ต้องการส่งแจ้งเตือนสำหรับเคส #${report.id} (${report.partName}) หรือไม่?`)) return;
         const statusInfo = STATUS_WORKFLOW[report.status];
         const message = `🔔 *Reminder: 4M Change*\n*Case ID:* \`${report.id}\` (${report.partName})\n*Current Status:* ${statusInfo.text}\n--------------------------------------\n‼️ *เรียน:* ${statusInfo.role}\n👉 *โปรดดำเนินการขั้นต่อไป:* ${statusInfo.guidance}`.trim();
-        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&t=${Date.now()}`;
+        // Add the report data to the URL to ensure receivers can view it
+        const reportData = encodeURIComponent(JSON.stringify(report));
+        const actionUrl = `${TELEGRAM_CONFIG.BASE_URL}?view=board&highlight=${report.id}&data=${reportData}&t=${Date.now()}`;
         sendTelegramNotification(message, actionUrl);
         showNotification('ส่งแจ้งเตือนสำเร็จ!');
     }
+    // --- CHANGE END ---
     
     function showNotification(message) {
         alert(message);
@@ -1092,4 +1117,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+    </html>
